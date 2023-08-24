@@ -73,10 +73,8 @@ char *get_location(char *command)
 
 	if (command_location == NULL && stat(command, &buffer) == 0)
 	{
-		/*command_location = _strdup(command);*/
-		return (command_location);
+		command_location = _strdup(command);
 	}
 
-	/*return (command_location);*/
-	return (NULL);
+	return (command_location);
 }
