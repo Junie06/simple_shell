@@ -24,6 +24,7 @@ char *construct_file_path(char *directory, char *command)
 	_strcat(file_path, command);
 	_strcat(file_path, "\0");
 
+	free(file_path);
 	return (file_path);
 }
 
@@ -72,8 +73,10 @@ char *get_location(char *command)
 
 	if (command_location == NULL && stat(command, &buffer) == 0)
 	{
-		command_location = _strdup(command);
+		/*command_location = _strdup(command);*/
+		return (command_location);
 	}
 
-	return (command_location);
+	/*return (command_location);*/
+	return (NULL);
 }
