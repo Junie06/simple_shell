@@ -1,38 +1,75 @@
 #include "shell.h"
 
+char **_copyenv(void);
+void env_free(void);
+char **_getenv(const char *var);
+
 /**
- * _getenv - Retrieves the value of an environment variable
- * @name: The name of the environment variable
-* Return: A pointer to the value of the environment
-* variable, or NULL if not found.
+ * _copyenv - Creates a copy of the environment.
+ *
+ * Return: If an error occurs - NULL.
+ *         O/w - a double pointer to the new copy.
  */
-char *_getenv(const char *name)
+char **_copyenv(void)
 {
-	int i;
+	char **new_environ;
+	size_t size;
+	int index;
 
-	for (i = 0; environ[i] != NULL; i++)
+	for (size = 0; environ[size]; size++)
+		;
+
+	new_environ = malloc(sizeof(char *) * (size + 1));
+	if (!new_environ)
+		return (NULL);
+
+	for (index = 0; environ[index]; index++)
 	{
-		char *separator = _strchr(environ[i], '=');
+		new_environ[index] = malloc(_strlen(environ[index]) + 1);
 
-		if (separator == NULL)
+		if (!new_environ[index])
 		{
-			continue;
+			for (index--; index >= 0; index--)
+				free(new_environ[index]);
+			free(new_environ);
+			return (NULL);
 		}
-
-
-		if (_strcmp(name, environ[i]) == 0)
-		{
-			char *value = malloc(strlen(separator + 1) + 1);
-
-			if (value == NULL)
-			{
-				perror("Memory allocation error");
-				return (NULL);
-			}
-			_strcpy(value, separator + 1);
-
-			return (value);
-		}
+		_strcpy(new_environ[index], environ[index]);
 	}
+	new_environ[index] = NULL;
+
+	return (new_environ);
+}
+
+/**
+ * env_free - Frees the the environment copy.
+ */
+void env_free(void)
+{
+	int index;
+
+	for (index = 0; environ[index]; index++)
+		free(environ[index]);
+	free(environ);
+}
+
+/**
+ * _getenv - Gets an environmental variable from the PATH.
+ * @var: The name of the environmental variable to get from PATH.
+ *
+ * Return: If the environmental variable does not exist - NULL.
+ *         Otherwise - a pointer to the environmental variable.
+ */
+char **_getenv(const char *var)
+{
+	int index, len;
+
+	len = _strlen(var);
+	for (index = 0; environ[index]; index++)
+	{
+		if (_strncmp(var, environ[index], len) == 0)
+			return (&environ[index]);
+	}
+
 	return (NULL);
 }

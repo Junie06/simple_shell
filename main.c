@@ -1,159 +1,134 @@
 #include "shell.h"
 
+void signal_handle(int sig);
+int execute(char **args, char **first);
+
 /**
- * print_prompt - Prints a prompt to the standard output.
- * @prompt: The prompt string to be printed.
+ * signal_handle - Prints a new prompt upon a signal.
+ * @sig: The signal.
  */
-
-void print_prompt(char *prompt)
+void signal_handle(int sig)
 {
-	ssize_t write_result = write(STDOUT_FILENO, prompt, _strlen(prompt));
+	char *new_prompt = "\n$ ";
 
-	if (write_result == -1)
-	{
-		perror("write");
-		exit(EXIT_FAILURE);
-	}
+	(void)sig;
+	signal(SIGINT, signal_handle);
+	write(STDIN_FILENO, new_prompt, 3);
 }
 
 /**
- * handle_exit - Handles the exit command of the shell.
- * @command: The exit command string.
+ * execmd - Executes a command in a child process.
+ * @args: An array of arguments.
+ * @first: A double pointer to the beginning of args.
+ *
+ * Return: If an error occurs - a corresponding error code.
+ *         O/w - The exit value of the last execmdd command.
  */
-
-void handle_exit(const char *command)
+int execute(char **args, char **first)
 {
-	ssize_t write_exit_result;
-	char *status_str = strchr(command, ' ');
+	pid_t child_pid;
+	int status, flag = 0, ret = 0;
+	char *command = args[0];
 
-	if (status_str != NULL)
+	if (command[0] != '/' && command[0] != '.')
 	{
-		int exit_status = atoi(status_str + 1);
+		flag = 1;
+		command = get_location(command);
+	}
 
-		exit(exit_status);
+	if (!command || (access(command, F_OK) == -1))
+	{
+		if (errno == EACCES)
+			ret = (set_error(args, 126));
+		else
+			ret = (set_error(args, 127));
 	}
 	else
 	{
-		write_exit_result = write(STDOUT_FILENO, "Exiting shell....\n",
-				_strlen("Exiting shell....\n"));
-
-		if (write_exit_result == -1)
-			perror("write");
-	}
-}
-
-/**
- * read_input - Reads a line of input from the standard input.
- * Return: A pointer to the read input line, or NULL on error.
- */
-
-char *read_input()
-{
-	char *lineptr = NULL;
-	size_t n = 0;
-	ssize_t nchars_read = getline(&lineptr, &n, stdin);
-
-	if (nchars_read == -1)
-	{
-		handle_exit(lineptr);
-		free(lineptr);
-		return (NULL);
-	}
-	return (lineptr);
-}
-
-/**
- * split_tokens - Splits a line into tokens using a delimiter.
- * @lineptr: The line to be split into tokens.
- * @delim: The delimiter used for tokenizing.
- * @argv: A pointer to the array of tokenized strings.
- * @num_tokens: A pointer to store the number of tokens.
- */
-void split_tokens(char *lineptr, const char *delim,
-		char ***argv, int *num_tokens)
-{
-	char *token;
-	int i;
-	char *lineptr_copy = malloc(strlen(lineptr) + 1);
-
-	if (lineptr_copy == NULL)
-	{
-		perror("tsh: memory allocation error");
-		exit(EXIT_FAILURE);
-	}
-	_strcpy(lineptr_copy, lineptr);
-
-	token = _strtok(lineptr, delim);
-
-	while (token != NULL)
-	{
-		(*num_tokens)++;
-		token = _strtok(NULL, delim);
-	}
-	(*num_tokens)++;
-
-	*argv = malloc(sizeof(char *) * (*num_tokens));
-
-	token = _strtok(lineptr_copy, delim);
-
-	for (i = 0; token != NULL; i++)
-	{
-		(*argv)[i] = malloc(sizeof(char) * strlen(token) + 1);
-		if ((*argv)[i] == NULL)
+		child_pid = fork();
+		if (child_pid == -1)
 		{
-			perror("tsh: memory allocation error");
-			exit(EXIT_FAILURE);
+			if (flag)
+				free(command);
+			perror("Error child:");
+			return (1);
 		}
-		_strcpy((*argv)[i], token);
-		token = _strtok(NULL, delim);
+		if (child_pid == 0)
+		{
+			execve(command, args, environ);
+			if (errno == EACCES)
+				ret = (set_error(args, 126));
+			env_free();
+			free_args(args, first);
+			free_aliaslist(aliases);
+			_exit(ret);
+		}
+		else
+		{
+			wait(&status);
+			ret = WEXITSTATUS(status);
+		}
 	}
-	(*argv)[*num_tokens - 1] = NULL;
-
-	free(lineptr_copy);
+	if (flag)
+		free(command);
+	return (ret);
 }
 
 /**
- * main - Entry point for the simple shell program.
- * @ac: The number of command-line arguments.
- * @argv: An array of command-line argument strings.
- * Return: Always returns 0.
+ * main - Runs a simple UNIX command interpreter.
+ * @argc: The number of arguments supplied to the program.
+ * @argv: An array of pointers to the arguments.
+ *
+ * Return: The return value of the last execmdd command.
  */
-
-int main(int ac, char **argv)
+int main(int argc, char *argv[])
 {
-	char *prompt = "$ ";
-	char *lineptr = NULL;
-	char **arguments = NULL;
-	int num_tokens = 0, i;
+	int ret = 0, retn;
+	int *exe_ret = &retn;
+	char *prompt = "$ ", *new_line = "\n";
 
-	(void)ac, (void)**argv;
+	name = argv[0];
+	hist = 1;
+	aliases = NULL;
+	signal(SIGINT, signal_handle);
+
+	*exe_ret = 0;
+	environ = _copyenv();
+	if (!environ)
+		exit(-100);
+
+	if (argc != 1)
+	{
+		ret = run_file_commands(argv[1], exe_ret);
+		env_free();
+		free_aliaslist(aliases);
+		return (*exe_ret);
+	}
+
+	if (!isatty(STDIN_FILENO))
+	{
+		while (ret != END_OF_FILE && ret != EXIT)
+			ret = args_handle(exe_ret);
+		env_free();
+		free_aliaslist(aliases);
+		return (*exe_ret);
+	}
 
 	while (1)
 	{
-		print_prompt(prompt);
-
-		lineptr = read_input();
-		if (lineptr == NULL)
+		write(STDOUT_FILENO, prompt, 2);
+		ret = args_handle(exe_ret);
+		if (ret == END_OF_FILE || ret == EXIT)
 		{
-			break;
+			if (ret == END_OF_FILE)
+				write(STDOUT_FILENO, new_line, 1);
+			env_free();
+			free_aliaslist(aliases);
+			exit(*exe_ret);
 		}
-
-		if (_strcmp(lineptr, "exit") == 0)
-		{
-			handle_exit(lineptr);
-			free(lineptr);
-			break;
-		}
-
-		split_tokens(lineptr, " \n", &arguments, &num_tokens);
-
-		execmd(arguments);
-
-		for (i = 0; i < num_tokens - 1; i++)
-			free(arguments[i]);
-
-		free(arguments);
-		free(lineptr);
 	}
-	return (0);
+
+	env_free();
+	free_aliaslist(aliases);
+	return (*exe_ret);
 }
