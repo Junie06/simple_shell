@@ -17,7 +17,7 @@ void signal_handle(int sig)
 }
 
 /**
- * execmd - Executes a command in a child process.
+ * execute - Executes a command in a child process.
  * @args: An array of arguments.
  * @first: A double pointer to the beginning of args.
  *

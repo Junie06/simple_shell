@@ -5,7 +5,8 @@ ssize_t gain_new_len(char *line);
 void log_oops(char *line, ssize_t *new_len);
 
 /**
- * line_handle - Partitions a line read from standard input as needed or described.
+ * line_handle - Partitions a line read from standard input
+ * as needed or described.
  * @line: A pointer to a line read from standard input.
  * @read: The length of line.
  *

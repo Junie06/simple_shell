@@ -34,7 +34,8 @@ int env_shell(char **args, char __attribute__((__unused__)) **first)
 }
 
 /**
- * setenv_shell - Changes or adds an environmental variable to the PATH of the shell Command.
+ * setenv_shell - Changes or adds an environmental variable to the
+ * PATH of the shell Command.
  * @args: An array of arguments passed to the shell.
  * @first: A double pointer to the beginning of args.
  * Description: args[1] is the name of the new or existing PATH variable.

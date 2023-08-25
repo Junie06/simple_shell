@@ -7,7 +7,8 @@ void exit_help(void);
 void help2_help(void);
 
 /**
- * all_help - Displays all possible builtin shellby commands with one command same as --help or man.
+ * all_help - Displays all possible builtin shellby commands with
+ * one command same as --help or man.
  */
 void all_help(void)
 {
@@ -87,7 +88,8 @@ void exit_help(void)
 }
 
 /**
- * help2_help - Displays information on the shellby builtin command 'help' an advanced man command.
+ * help2_help - Displays information on the shellby builtin
+ * command 'help' an advanced man command.
  */
 void help2_help(void)
 {
