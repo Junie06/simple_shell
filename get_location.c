@@ -24,7 +24,6 @@ char *construct_file_path(char *directory, char *command)
 	_strcat(file_path, command);
 	_strcat(file_path, "\0");
 
-	free(file_path);
 	return (file_path);
 }
 

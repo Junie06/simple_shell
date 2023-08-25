@@ -24,7 +24,7 @@ void print_prompt(char *prompt)
 void handle_exit(const char *command)
 {
 	ssize_t write_exit_result;
-	char *status_str = _strchr(command, ' ');
+	char *status_str = strchr(command, ' ');
 
 	if (status_str != NULL)
 	{
@@ -51,7 +51,7 @@ char *read_input()
 {
 	char *lineptr = NULL;
 	size_t n = 0;
-	ssize_t nchars_read = _getline(&lineptr, &n, stdin);
+	ssize_t nchars_read = getline(&lineptr, &n, stdin);
 
 	if (nchars_read == -1)
 	{
