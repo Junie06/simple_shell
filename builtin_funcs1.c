@@ -8,7 +8,9 @@ void help2_help(void);
 
 /**
  * all_help - Displays all possible builtin shellby commands
- * with one command same as --help or man.
+ * with one command same as --help or manual.
+ * all_help - Displays all possible builtin shellby commands with
+ * one command same as --help or man.
  */
 void all_help(void)
 {
