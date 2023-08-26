@@ -73,7 +73,8 @@ char *_itoa(int num)
 
 
 /**
- * set_error - Writes a custom error message to stderr that conforms to shell standards.
+ * set_error - Writes a custom error message to
+ * stderr that conforms to shell standards.
  * @args: An array of arguments passed to the function.
  * @err: The error value.
  *
