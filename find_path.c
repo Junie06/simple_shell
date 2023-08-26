@@ -9,8 +9,6 @@ list_t *get_path_dir(char *path);
  * Return: If an error occurs or the command cannot be located
  * - NULL (No return value).
  *         Otherwise - the full pathname of the command is returned.
- * Return: If an error occurs or the command cannot be located -
- * NULL (No return value).
  * Otherwise - the full pathname of the command is returned.
  */
 char *get_location(char *command)

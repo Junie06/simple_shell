@@ -186,8 +186,6 @@ int args_handle(int *exe_ret)
  * @args: 2D pointer to tokenized commands and arguments.
  * Return: If a ';', '&&', or '||' is placed at an invalid
  * position - 2 as error status.
- * Return: If a ';', '&&', or '||' is placed at an invalid position
- * - 2 as error status.
  *	   Otherwise - 0 as error status.
  */
 int args_check(char **args)
